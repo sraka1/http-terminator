@@ -66,6 +66,7 @@ export default (
    * @see https://github.com/nodejs/node/blob/57bd715d527aba8dae56b975056961b0e429e91e/lib/_http_client.js#L363-L413
    */
   const destroySocket = (socket) => {
+    console.log("[http-terminator] destroySocket called")
     socket.destroy();
 
     if (socket.server instanceof http.Server) {
