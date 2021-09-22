@@ -36,6 +36,7 @@ export default (
 
   server.on('connection', (socket) => {
     if (terminating) {
+      log.info("Destroying newly requested HTTP socket because server is terminating")
       socket.destroy();
     } else {
       sockets.add(socket);
@@ -48,6 +49,7 @@ export default (
 
   server.on('secureConnection', (socket) => {
     if (terminating) {
+      log.info("Destroying newly requested HTTPS socket because server is terminating")
       socket.destroy();
     } else {
       secureSockets.add(socket);
@@ -90,9 +92,12 @@ export default (
 
     server.on('request', (incomingMessage, outgoingMessage) => {
       if (!outgoingMessage.headersSent) {
+        log.info("Adding connection-close to response associated with request incoming on already connected socket")
         outgoingMessage.setHeader('connection', 'close');
       }
     });
+
+    log.info(`There are ${sockets.size} open HTTP sockets and ${secureSockets.size} open HTTPS sockets`)
 
     for (const socket of sockets) {
       // This is the HTTP CONNECT request socket.
@@ -111,7 +116,7 @@ export default (
 
         continue;
       }
-
+      log.info("Destroying HTTP socket because no _httpMessage assigned to it")
       destroySocket(socket);
     }
 
@@ -127,6 +132,7 @@ export default (
         continue;
       }
 
+      log.info("Destroying HTTPS socket because no _httpMessage assigned to it")
       destroySocket(socket);
     }
 
@@ -143,10 +149,12 @@ export default (
       // Ignore timeout errors
     } finally {
       for (const socket of sockets) {
+        log.info("Destroying HTTP socket because timeout has been reached")
         destroySocket(socket);
       }
 
       for (const socket of secureSockets) {
+        log.info("Destroying HTTPS socket because timeout has been reached")
         destroySocket(socket);
       }
     }
