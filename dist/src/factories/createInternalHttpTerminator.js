@@ -24,7 +24,7 @@ exports.default = (configurationInput) => {
     let terminating;
     server.on('connection', (socket) => {
         if (terminating) {
-            log.info("Destroying newly requested HTTP socket because server is terminating");
+            console.log("[http-terminator] Destroying newly requested HTTP socket because server is terminating");
             socket.destroy();
         }
         else {
@@ -36,7 +36,7 @@ exports.default = (configurationInput) => {
     });
     server.on('secureConnection', (socket) => {
         if (terminating) {
-            log.info("Destroying newly requested HTTPS socket because server is terminating");
+            console.log("[http-terminator] Destroying newly requested HTTPS socket because server is terminating");
             socket.destroy();
         }
         else {
@@ -73,11 +73,11 @@ exports.default = (configurationInput) => {
         });
         server.on('request', (incomingMessage, outgoingMessage) => {
             if (!outgoingMessage.headersSent) {
-                log.info("Adding connection-close to response associated with request incoming on already connected socket");
+                console.log("[http-terminator] Adding connection-close to response associated with request incoming on already connected socket");
                 outgoingMessage.setHeader('connection', 'close');
             }
         });
-        log.info(`There are ${sockets.size} open HTTP sockets and ${secureSockets.size} open HTTPS sockets`);
+        console.log(`[http-terminator] There are ${sockets.size} open HTTP sockets and ${secureSockets.size} open HTTPS sockets`);
         for (const socket of sockets) {
             // This is the HTTP CONNECT request socket.
             // @ts-expect-error Unclear if I am using wrong type or how else this should be handled.
@@ -92,7 +92,7 @@ exports.default = (configurationInput) => {
                 }
                 continue;
             }
-            log.info("Destroying HTTP socket because no _httpMessage assigned to it");
+            console.log("[http-terminator] Destroying HTTP socket because no _httpMessage assigned to it");
             destroySocket(socket);
         }
         for (const socket of secureSockets) {
@@ -104,7 +104,7 @@ exports.default = (configurationInput) => {
                 }
                 continue;
             }
-            log.info("Destroying HTTPS socket because no _httpMessage assigned to it");
+            console.log("[http-terminator] Destroying HTTPS socket because no _httpMessage assigned to it");
             destroySocket(socket);
         }
         // Wait for all in-flight connections to drain, forcefully terminating any
@@ -122,11 +122,11 @@ exports.default = (configurationInput) => {
         }
         finally {
             for (const socket of sockets) {
-                log.info("Destroying HTTP socket because timeout has been reached");
+                console.log("[http-terminator] Destroying HTTP socket because timeout has been reached");
                 destroySocket(socket);
             }
             for (const socket of secureSockets) {
-                log.info("Destroying HTTPS socket because timeout has been reached");
+                console.log("[http-terminator] Destroying HTTPS socket because timeout has been reached");
                 destroySocket(socket);
             }
         }
